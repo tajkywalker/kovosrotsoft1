@@ -1,0 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; }
+  body {
+    @apply bg-gray-100 text-gray-800;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer components {
+  /* Selection cards used in wizard steps */
+  .sel-card {
+    @apply cursor-pointer rounded-xl border-2 border-gray-200 bg-white p-4
+           text-center font-semibold transition-all duration-150
+           hover:border-blue-400 hover:shadow-md hover:-translate-y-0.5;
+  }
+  .sel-card.selected {
+    @apply border-blue-500 bg-blue-50 text-blue-700 shadow-md;
+  }
+
+  /* Primary action button */
+  .btn-primary {
+    @apply rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white
+           transition hover:bg-blue-700 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  /* Secondary / ghost button */
+  .btn-ghost {
+    @apply rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-600
+           transition hover:bg-gray-100 active:scale-95;
+  }
+
+  /* Danger button */
+  .btn-danger {
+    @apply rounded-lg bg-red-500 px-5 py-2.5 text-sm font-semibold text-white
+           transition hover:bg-red-600 active:scale-95;
+  }
+
+  /* Form input */
+  .form-input {
+    @apply w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5
+           text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200;
+  }
+
+  /* Badge */
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  }
+}
+
+/* Smooth modal animation */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.modal-overlay { animation: fadeIn 0.18s ease; }
+.modal-card    { animation: slideUp 0.2s ease; }
+
+/* Scrollbar styling */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }

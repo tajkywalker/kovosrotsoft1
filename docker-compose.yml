@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  # ── Build frontend first, output to shared volume ──────────────────────────
+  frontend-build:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - frontend_dist:/app/dist
+    command: sh -c "npm install && npm run build"
+
+  # ── Backend serves API + built frontend ────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "3001:3001"
+    volumes:
+      - db_data:/app/data
+      - frontend_dist:/app/frontend/dist:ro
+    environment:
+      - PORT=3001
+      - DB_PATH=/app/data/kovosrot.db
+    depends_on:
+      frontend-build:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+volumes:
+  db_data:
+  frontend_dist:
