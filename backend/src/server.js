@@ -11,8 +11,6 @@ import boxesRouter       from './routes/boxes.js';
 import containersRouter  from './routes/containers.js';
 import recordsRouter     from './routes/records.js';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
 seed();
 
 const app = express();
@@ -25,12 +23,13 @@ app.use('/api/boxes',      boxesRouter);
 app.use('/api/containers', containersRouter);
 app.use('/api/records',    recordsRouter);
 
-// Serve built frontend in production
-const distPath = join(__dirname, '../../frontend/dist');
-app.use(express.static(distPath));
+// Serve built frontend (volume mounted at /app/frontend/dist)
+const DIST = '/app/frontend/dist';
+app.use(express.static(DIST));
 app.get('*', (_req, res) => {
-  res.sendFile(join(distPath, 'index.html'));
+  res.sendFile(join(DIST, 'index.html'));
 });
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`KovošrotSoft backend running on port ${PORT}`));
+
