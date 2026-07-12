@@ -5,11 +5,9 @@ import sqlite3wasm from 'node-sqlite3-wasm';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DB_PATH = process.env.DB_PATH || join(__dirname, '../../../data/kovosrot.db');
-
 mkdirSync(dirname(DB_PATH), { recursive: true });
 
 const db = new sqlite3wasm.Database(DB_PATH);
-
 db.exec(`PRAGMA journal_mode=WAL`);
 db.exec(`PRAGMA foreign_keys=ON`);
 
@@ -64,11 +62,50 @@ db.exec(`
     details    TEXT NOT NULL,
     user_name  TEXT NOT NULL DEFAULT 'admin'
   );
+
+  -- PDF converter: uploaded PDFs (metadata)
+  CREATE TABLE IF NOT EXISTS pdf_imports (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    filename   TEXT NOT NULL,
+    date_from  TEXT,
+    date_to    TEXT,
+    label      TEXT NOT NULL,
+    raw_text   TEXT NOT NULL,
+    created_at TEXT DEFAULT (datetime('now','localtime'))
+  );
+
+  -- PDF converter: individual parsed rows
+  CREATE TABLE IF NOT EXISTS pdf_rows (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    import_id   INTEGER NOT NULL,
+    date        TEXT,
+    raw_material TEXT,
+    raw_type    TEXT,
+    raw_box     TEXT,
+    brutto      REAL,
+    netto       REAL,
+    location    TEXT,
+    mapped_material_id INTEGER,
+    mapped_type_id     INTEGER,
+    FOREIGN KEY (import_id) REFERENCES pdf_imports(id) ON DELETE CASCADE
+  );
+
+  -- PDF converter: user-defined name mappings (raw PDF text → our type)
+  CREATE TABLE IF NOT EXISTS pdf_mappings (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    pdf_name       TEXT NOT NULL UNIQUE,
+    material_id    INTEGER,
+    type_id        INTEGER,
+    created_at     TEXT DEFAULT (datetime('now','localtime'))
+  );
 `);
 
-// Migration: add tare_weight column if it doesn't exist yet (for existing DBs)
-try {
-  db.exec(`ALTER TABLE boxes ADD COLUMN tare_weight REAL NOT NULL DEFAULT 0`);
-} catch { /* column already exists */ }
+// Migrations
+const migrations = [
+  `ALTER TABLE boxes ADD COLUMN tare_weight REAL NOT NULL DEFAULT 0`,
+];
+for (const m of migrations) {
+  try { db.exec(m); } catch { /* already exists */ }
+}
 
 export default db;

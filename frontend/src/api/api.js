@@ -1,22 +1,18 @@
 const BASE = '/api';
 
-function getToken() {
-  return localStorage.getItem('kss_token') || '';
-}
+function getToken() { return localStorage.getItem('kss_token') || ''; }
 
 async function req(method, path, body) {
   const headers = { Authorization: `Bearer ${getToken()}` };
   if (body) headers['Content-Type'] = 'application/json';
-
   const res = await fetch(`${BASE}${path}`, {
     method,
     headers,
     body: body ? JSON.stringify(body) : undefined,
   });
-
   if (res.status === 401) {
     localStorage.removeItem('kss_token');
-    window.location.href = '/login';
+    window.location.href = '/';
     throw new Error('Nepřihlášen');
   }
   if (!res.ok) {
@@ -39,14 +35,14 @@ export const api = {
     }),
   },
   materials:  {
-    list:    ()     => req('GET',    '/materials'),
-    create:  (data) => req('POST',   '/materials', data),
-    remove:  (id)   => req('DELETE', `/materials/${id}`),
+    list:   ()     => req('GET',    '/materials'),
+    create: (data) => req('POST',   '/materials', data),
+    remove: (id)   => req('DELETE', `/materials/${id}`),
   },
   types:  {
-    list:    (matId) => req('GET',   `/types${matId ? `?material_id=${matId}` : ''}`),
-    create:  (data)  => req('POST',  '/types', data),
-    remove:  (id)    => req('DELETE', `/types/${id}`),
+    list:   (matId) => req('GET',   `/types${matId ? `?material_id=${matId}` : ''}`),
+    create: (data)  => req('POST',  '/types', data),
+    remove: (id)    => req('DELETE', `/types/${id}`),
   },
   boxes:  {
     list:    (matId) => req('GET',   `/boxes${matId ? `?material_id=${matId}` : ''}`),
@@ -60,13 +56,37 @@ export const api = {
     remove: (id)   => req('DELETE', `/containers/${id}`),
   },
   records: {
-    list:    ()          => req('GET',    '/records'),
-    summary: ()          => req('GET',    '/records/summary'),
-    verify:  (from, to)  => req('GET',   `/records/verify?from=${from}&to=${to}`),
-    create:  (data)      => req('POST',   '/records', data),
-    remove:  (id)        => req('DELETE', `/records/${id}`),
+    list:    ()         => req('GET',    '/records'),
+    summary: ()         => req('GET',    '/records/summary'),
+    verify:  (f, t)     => req('GET',   `/records/verify?from=${f}&to=${t}`),
+    create:  (data)     => req('POST',   '/records', data),
+    remove:  (id)       => req('DELETE', `/records/${id}`),
   },
   logs: {
     list: (limit) => req('GET', `/logs${limit ? `?limit=${limit}` : ''}`),
+  },
+  konvertor: {
+    // Upload PDF – uses FormData, not JSON
+    upload: async (file) => {
+      const fd = new FormData();
+      fd.append('pdf', file);
+      const res = await fetch(`${BASE}/konvertor/upload`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${getToken()}` },
+        body: fd,
+      });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || 'Chyba uploadu');
+      return d;
+    },
+    imports:  ()    => req('GET',    '/konvertor/imports'),
+    rows:     (id)  => req('GET',    `/konvertor/imports/${id}/rows`),
+    remove:   (id)  => req('DELETE', `/konvertor/imports/${id}`),
+    remap:    (id)  => req('POST',   `/konvertor/imports/${id}/remap`, {}),
+    mappings: {
+      list:   ()     => req('GET',    '/konvertor/mappings'),
+      save:   (data) => req('POST',   '/konvertor/mappings', data),
+      remove: (id)   => req('DELETE', `/konvertor/mappings/${id}`),
+    },
   },
 };

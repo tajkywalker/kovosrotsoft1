@@ -13,6 +13,7 @@ import boxesRouter      from './routes/boxes.js';
 import containersRouter from './routes/containers.js';
 import recordsRouter    from './routes/records.js';
 import logsRouter       from './routes/logs.js';
+import konvertorRouter  from './routes/konvertor.js';
 
 seed();
 
@@ -30,6 +31,7 @@ app.use('/api/boxes',      verifyToken, boxesRouter);
 app.use('/api/containers', verifyToken, containersRouter);
 app.use('/api/records',    verifyToken, recordsRouter);
 app.use('/api/logs',       verifyToken, logsRouter);
+app.use('/api/konvertor',  verifyToken, konvertorRouter);
 
 // Serve built frontend (volume mounted at /app/frontend/dist)
 const DIST = '/app/frontend/dist';

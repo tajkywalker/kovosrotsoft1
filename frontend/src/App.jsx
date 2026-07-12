@@ -7,6 +7,7 @@ import Prehled from './pages/zaznamy/Prehled.jsx';
 import Seznam from './pages/zaznamy/Seznam.jsx';
 import Overeni from './pages/zaznamy/Overeni.jsx';
 import Log from './pages/Log.jsx';
+import Konvertor from './pages/Konvertor.jsx';
 import ZapisModal from './pages/Zapis.jsx';
 
 export default function App() {
@@ -20,9 +21,7 @@ export default function App() {
     setToken(null);
   };
 
-  if (!token) {
-    return <Login onLogin={handleLogin} />;
-  }
+  if (!token) return <Login onLogin={handleLogin} />;
 
   return (
     <>
@@ -33,11 +32,11 @@ export default function App() {
           <Route path="/zaznamy/prehled" element={<Prehled />} />
           <Route path="/zaznamy/seznam"  element={<Seznam />} />
           <Route path="/zaznamy/overeni" element={<Overeni />} />
+          <Route path="/konvertor"       element={<Konvertor />} />
           <Route path="/log"             element={<Log />} />
           <Route path="*"                element={<Navigate to="/zaznamy/prehled" replace />} />
         </Routes>
       </Layout>
-
       {showZapis && <ZapisModal onClose={() => setShowZapis(false)} />}
     </>
   );
