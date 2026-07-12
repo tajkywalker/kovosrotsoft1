@@ -29,9 +29,10 @@ db.exec(`
   );
 
   CREATE TABLE IF NOT EXISTS boxes (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    name        TEXT NOT NULL UNIQUE,
-    material_id INTEGER NOT NULL,
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    name         TEXT NOT NULL UNIQUE,
+    material_id  INTEGER NOT NULL,
+    tare_weight  REAL NOT NULL DEFAULT 0,
     FOREIGN KEY (material_id) REFERENCES materials(id) ON DELETE CASCADE
   );
 
@@ -55,6 +56,19 @@ db.exec(`
     FOREIGN KEY (type_id)     REFERENCES types(id),
     FOREIGN KEY (box_id)      REFERENCES boxes(id)
   );
+
+  CREATE TABLE IF NOT EXISTS logs (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp  TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+    action     TEXT NOT NULL,
+    details    TEXT NOT NULL,
+    user_name  TEXT NOT NULL DEFAULT 'admin'
+  );
 `);
+
+// Migration: add tare_weight column if it doesn't exist yet (for existing DBs)
+try {
+  db.exec(`ALTER TABLE boxes ADD COLUMN tare_weight REAL NOT NULL DEFAULT 0`);
+} catch { /* column already exists */ }
 
 export default db;
