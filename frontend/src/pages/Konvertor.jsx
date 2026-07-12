@@ -22,19 +22,40 @@ function Toast({ msg, type }) {
 }
 
 // ─── Single import accordion row ─────────────────────────────────────────────
-function ImportCard({ imp, materials, types, onDelete, onRemap, compareId, onCompare }) {
-  const [open,    setOpen]    = useState(false);
-  const [rows,    setRows]    = useState([]);
-  const [loading, setLoading] = useState(false);
+function ImportCard({ imp, materials, types, onDelete, onRemap, onReparse, compareId, onCompare }) {
+  const [open,     setOpen]    = useState(false);
+  const [rows,     setRows]    = useState([]);
+  const [loading,  setLoading] = useState(false);
+  const [rawText,  setRawText] = useState(null);
+  const [showRaw,  setShowRaw] = useState(false);
+
+  const loadRows = async () => {
+    setLoading(true);
+    const data = await api.konvertor.rows(imp.id).catch(() => []);
+    setRows(data);
+    setLoading(false);
+  };
 
   const toggle = async () => {
-    if (!open && rows.length === 0) {
-      setLoading(true);
-      const data = await api.konvertor.rows(imp.id).catch(() => []);
-      setRows(data);
-      setLoading(false);
-    }
+    if (!open && rows.length === 0) await loadRows();
     setOpen(v => !v);
+  };
+
+  const handleReparse = async () => {
+    setLoading(true);
+    try {
+      const res = await onReparse(imp.id);
+      await loadRows();
+      setOpen(true);
+    } finally { setLoading(false); }
+  };
+
+  const toggleRaw = async () => {
+    if (!rawText) {
+      const data = await api.konvertor.rawtext(imp.id).catch(() => ({ raw_text: '(chyba načtení)' }));
+      setRawText(data.raw_text);
+    }
+    setShowRaw(v => !v);
   };
 
   const totalNetto  = imp.total_netto  ?? 0;
@@ -59,16 +80,22 @@ function ImportCard({ imp, materials, types, onDelete, onRemap, compareId, onCom
       </button>
 
       {/* Actions */}
-      <div className="flex items-center gap-2 px-4 py-2 border-t border-gray-100 bg-white">
+      <div className="flex items-center gap-2 px-4 py-2 border-t border-gray-100 bg-white flex-wrap">
         <button
           onClick={() => onCompare(compareId === imp.id ? null : imp.id)}
           className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-            compareId === imp.id
-              ? 'bg-blue-600 text-white'
-              : 'border border-gray-200 text-gray-600 hover:bg-gray-50'
+            compareId === imp.id ? 'bg-blue-600 text-white' : 'border border-gray-200 text-gray-600 hover:bg-gray-50'
           }`}
         >
           {compareId === imp.id ? '✓ Porovnáváno' : '⇄ Porovnat'}
+        </button>
+        <button
+          onClick={handleReparse}
+          disabled={loading}
+          className="rounded-lg px-3 py-1.5 text-xs font-semibold border border-blue-200 text-blue-600 hover:bg-blue-50 transition disabled:opacity-50"
+          title="Přeparsovat s nejnovějším algoritmem"
+        >
+          {loading ? '…' : '⟳ Přeparsovat'}
         </button>
         <button
           onClick={() => { onRemap(imp.id); }}
@@ -77,12 +104,29 @@ function ImportCard({ imp, materials, types, onDelete, onRemap, compareId, onCom
           ↻ Přemapovat
         </button>
         <button
+          onClick={toggleRaw}
+          className="rounded-lg px-3 py-1.5 text-xs font-semibold border border-gray-200 text-gray-500 hover:bg-gray-50 transition"
+          title="Zobrazit/skrýt raw text z PDF"
+        >
+          {showRaw ? '✕ Raw' : '👁 Raw text'}
+        </button>
+        <button
           onClick={() => onDelete(imp.id)}
           className="ml-auto rounded-lg px-3 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-50 transition"
         >
           Smazat
         </button>
       </div>
+
+      {/* Raw text debug view */}
+      {showRaw && rawText && (
+        <div className="border-t border-gray-100 bg-gray-900 px-4 py-3">
+          <p className="text-xs text-gray-400 mb-2">Raw text z PDF (prvních 6000 znaků) – pozor: háčkované znaky mohou chybět:</p>
+          <pre className="text-xs text-green-300 font-mono overflow-x-auto whitespace-pre-wrap max-h-64 overflow-y-auto leading-5">
+            {rawText}
+          </pre>
+        </div>
+      )}
 
       {/* Rows */}
       {open && (

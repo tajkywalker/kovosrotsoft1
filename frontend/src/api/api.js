@@ -83,6 +83,8 @@ export const api = {
     rows:     (id)  => req('GET',    `/konvertor/imports/${id}/rows`),
     remove:   (id)  => req('DELETE', `/konvertor/imports/${id}`),
     remap:    (id)  => req('POST',   `/konvertor/imports/${id}/remap`, {}),
+    reparse:  (id)  => req('POST',   `/konvertor/imports/${id}/reparse`, {}),
+    rawtext:  (id)  => req('GET',    `/konvertor/imports/${id}/rawtext`),
     mappings: {
       list:   ()     => req('GET',    '/konvertor/mappings'),
       save:   (data) => req('POST',   '/konvertor/mappings', data),
