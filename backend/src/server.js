@@ -35,7 +35,6 @@ app.use('/api/logs',       verifyToken, logsRouter);
 const DIST = '/app/frontend/dist';
 app.use(express.static(DIST));
 app.get('*', (_req, res) => {
-  const { join } = await import('path');
   res.sendFile(join(DIST, 'index.html'));
 });
 
